@@ -3,6 +3,8 @@ package com.nbdSteve.GlobalXCodingAssessment;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.logging.Logger;
 
 public class NameSorter {
@@ -11,16 +13,13 @@ public class NameSorter {
     private Logger log = Logger.getLogger(NameSorter.class.getName());
 
     //Variables for reading from the unsorted names file
-    private ArrayList<String> unsortedNames = new ArrayList<>();
+    private ArrayList<String> nameList = new ArrayList<>();
     private String fileName = "unsorted-names-list.txt";
     private String line = null;
 
     //Variables for writing to the sorted names file
     private String newFileName = "sorted-names-list.txt";
     private File file = new File(newFileName);
-
-    //Variables for sorting the names alphabetically
-    private ArrayList<String> sortedNames = new ArrayList<>();
 
     public static void main(String[] args) {
         new NameSorter();
@@ -30,7 +29,7 @@ public class NameSorter {
         //Get the names from the file
         readUnsortedNamesFile();
         //Sorting the names alphabetically
-        Collections.sort(unsortedNames);
+        sortNames();
         //Overwriting the existing file with the sorted list
         writeSortedNamesFile();
     }
@@ -48,12 +47,12 @@ public class NameSorter {
             while ((line = bufferedReader.readLine()) != null) {
                 //Checking that the name is valid
                 if (line.contains(" ")) {
-                    unsortedNames.add(line);
-                    log.info("added line " + line);
+                    nameList.add(line + "\n");
                 } else {
                     throw new InvalidFileInputException();
                 }
             }
+            log.info("All names have been successfully read from the file: " + fileName);
         } catch (InvalidFileInputException e) {
             log.severe("The line '" + line + "' is not a valid " +
                     "name entry.");
@@ -65,25 +64,31 @@ public class NameSorter {
     }
 
     public void sortNames(){
-        for (int i = 0; i < unsortedNames.size(); i++){
-            String name = unsortedNames.get(i);
-            String[] parts = name.split(" ");
-            String lastName = parts[parts.length];
-        }
+        //Creating a new comparator that compares the last name
+        Collections.sort(nameList, new Comparator<String>() {
+            @Override
+            public int compare(String name1, String name2) {
+                String[] parts1 = name1.split(" ");
+                String[] parts2 = name2.split(" ");
+                return parts1[parts1.length - 1].compareToIgnoreCase(parts2[parts2.length - 1]);
+            }
+        });
+        log.info("All names have been successfully sorted alphabetically by last name.");
     }
 
     public void writeSortedNamesFile() {
         try {
+            //If the file exists, wipe it so it can take new input
             if (file.exists()) {
                 new PrintWriter(newFileName).close();
             }
             FileWriter fileWriter = new FileWriter(file, false);
-
-            for (int i = 0; i < sortedNames.size(); i++){
-                fileWriter.write(sortedNames.get(i));
+            //Added each name to the file in order
+            for (int i = 0; i < nameList.size(); i++) {
+                fileWriter.write(nameList.get(i));
             }
-
             fileWriter.close();
+            log.info("The sorted names have been successfully written to the file: " + newFileName);
         } catch (IOException e) {
             log.severe("Error writing to the file: " + newFileName);
         }
