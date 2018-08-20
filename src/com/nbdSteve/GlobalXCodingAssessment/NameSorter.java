@@ -1,12 +1,8 @@
 package com.nbdSteve.GlobalXCodingAssessment;
 
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.logging.Logger;
 
 public class NameSorter {
@@ -14,58 +10,53 @@ public class NameSorter {
     //Used to log information
     private Logger log = Logger.getLogger(NameSorter.class.getName());
 
-    //Variables for getting unsorted names
+    //Variables for reading from the unsorted names file
     private ArrayList<String> unsortedNames = new ArrayList<>();
     private String fileName = "unsorted-names-list.txt";
     private String line = null;
 
-    //Variables for overwriting the file
+    //Variables for writing to the sorted names file
     private String newFileName = "sorted-names-list.txt";
     private File file = new File(newFileName);
 
-//    private String[] parts = "";
-
     //Variables for sorting the names alphabetically
-    private HashMap<String, Integer> tempSorter = new HashMap<>();
     private ArrayList<String> sortedNames = new ArrayList<>();
 
-    public static void main(String[] args) throws InvalidFileInputException {
+    public static void main(String[] args) {
         new NameSorter();
     }
 
-    NameSorter() throws InvalidFileInputException {
+    NameSorter() {
         //Get the names from the file
-        readingNamesFromFile();
+        readUnsortedNamesFile();
         //Sorting the names alphabetically
         Collections.sort(unsortedNames);
         //Overwriting the existing file with the sorted list
-        writeNamesFile();
+        writeSortedNamesFile();
     }
 
     /**
      * Reading the names from the unsorted file, and then adding
      * them to the array list of names to be sorted.
      */
-    public void readingNamesFromFile() throws InvalidFileInputException {
+    public void readUnsortedNamesFile() {
         try {
+            //Creating a new reader to read the file
             FileReader fileReader = new FileReader(fileName);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
-
-            while ((line = bufferedReader.readLine()) != null){
+            //Iterate through the file and add the lines
+            while ((line = bufferedReader.readLine()) != null) {
                 //Checking that the name is valid
-                if (line.contains(" ")){
+                if (line.contains(" ")) {
                     unsortedNames.add(line);
                     log.info("added line " + line);
                 } else {
-                    log.severe("The line '" + line + "' is not a valid " +
-                            "name entry.");
                     throw new InvalidFileInputException();
                 }
             }
-
-//            Collections.sort(unsortedNames);
-
-            log.info("Added names to the array list");
+        } catch (InvalidFileInputException e) {
+            log.severe("The line '" + line + "' is not a valid " +
+                    "name entry.");
         } catch (FileNotFoundException e) {
             log.severe("The file " + fileName + " was not found.");
         } catch (IOException e) {
@@ -73,58 +64,28 @@ public class NameSorter {
         }
     }
 
-    public String getLastName(int i, ArrayList names){
-        String name = unsortedNames.get(i);
-        String[] parts = name.split(" ");
-        return parts[parts.length];
-    }
-
     public void sortNames(){
-//        Collections.sort(unsortedNames,
+        for (int i = 0; i < unsortedNames.size(); i++){
+            String name = unsortedNames.get(i);
+            String[] parts = name.split(" ");
+            String lastName = parts[parts.length];
+        }
     }
 
-    public void writeNamesFile() {
+    public void writeSortedNamesFile() {
         try {
+            if (file.exists()) {
+                new PrintWriter(newFileName).close();
+            }
             FileWriter fileWriter = new FileWriter(file, false);
 
-            for (int i = 0; i < unsortedNames.size(); i++){
-                fileWriter.write(unsortedNames.get(i));
+            for (int i = 0; i < sortedNames.size(); i++){
+                fileWriter.write(sortedNames.get(i));
             }
 
             fileWriter.close();
-        } catch (FileNotFoundException e) {
-            log.severe("The file " + newFileName + " was not found.");
         } catch (IOException e) {
-            log.severe("Error overwriting the file: " + newFileName);
-        }
-//        File deleteFile = new File (fileName);
-//        deleteFile.delete();
-//        deleteFile.
-//        File overwriteFile = new File (fileName);
-    }
-
-    public void tempSortingNames () {
-
-        for (int i = 0; i < unsortedNames.size(); i++){
-
-            String name = unsortedNames.get(i);
-            int nameValue = 0;
-
-            for (int j = 0; j < name.length(); j++){
-                 int c = name.charAt(j);
-                 nameValue += c;
-            }
-
-            tempSorter.put(name, nameValue);
-//            log.info(String.valueOf(nameValue));
-        }
-    }
-
-    public void sortingNames () {
-        String[] keys = new String[tempSorter.size()];
-
-        for(int i = 0; i < 5000; i++){
-
+            log.severe("Error writing to the file: " + newFileName);
         }
     }
 }
